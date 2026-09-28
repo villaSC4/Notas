@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     const {
       id,
       docente,
+      codigoDocente,
       observador,
       asignatura,
       carrera,
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
     const nuevaEvaluacion: Evaluacion = {
       id: id || `eval-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       docente: docente.trim(),
+      codigoDocente: codigoDocente?.trim() || undefined,
       observador: observador.trim(),
       asignatura: asignatura.trim(),
       carrera: carrera?.trim() || 'General - SUBE',

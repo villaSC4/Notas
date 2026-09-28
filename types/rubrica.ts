@@ -28,6 +28,7 @@ export interface DimensionDefinition {
 
 export interface EvaluacionMetadata {
   docente: string;
+  codigoDocente?: string;
   observador: string;
   asignatura: string;
   carrera: string;
@@ -47,6 +48,7 @@ export interface RetroalimentacionGeneral {
 export interface Evaluacion {
   id: string;
   docente: string;
+  codigoDocente?: string;
   observador: string;
   asignatura: string;
   carrera?: string;

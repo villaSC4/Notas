@@ -185,6 +185,7 @@ export default function RubricaPage() {
     setCurrentId(item.id);
     setMetadata({
       docente: item.docente,
+      codigoDocente: item.codigoDocente || '',
       observador: item.observador,
       asignatura: item.asignatura,
       carrera: item.carrera || 'SUBE a Distancia',

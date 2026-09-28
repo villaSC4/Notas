@@ -79,7 +79,14 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({
         <tbody>
           <tr>
             <th className="w-1/6 text-left">Docente Evaluado:</th>
-            <td className="w-2/6 font-semibold">{metadata.docente || '—'}</td>
+            <td className="w-2/6 font-semibold">
+              {metadata.docente || '—'}{' '}
+              {metadata.codigoDocente ? (
+                <span className="text-[9.5px] font-normal text-slate-500 font-mono">
+                  ({metadata.codigoDocente})
+                </span>
+              ) : null}
+            </td>
             <th className="w-1/6 text-left">Observador / Cargo:</th>
             <td className="w-2/6">{metadata.observador || '—'}</td>
           </tr>

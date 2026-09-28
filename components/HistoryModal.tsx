@@ -57,6 +57,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
     const term = searchTerm.toLowerCase();
     const matchesSearch =
       item.docente.toLowerCase().includes(term) ||
+      (item.codigoDocente && item.codigoDocente.toLowerCase().includes(term)) ||
       item.asignatura.toLowerCase().includes(term) ||
       item.observador.toLowerCase().includes(term) ||
       (item.carrera && item.carrera.toLowerCase().includes(term));
@@ -219,6 +220,11 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                         <User className="w-3.5 h-3.5 text-slate-400" />
                         {item.docente}
                       </span>
+                      {item.codigoDocente && (
+                        <span className="text-[10px] font-bold bg-[#143e72] text-white px-1.5 py-0.5 rounded">
+                          {item.codigoDocente}
+                        </span>
+                      )}
                       <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
                         {item.carrera || 'SUBE a Distancia'}
                       </span>

@@ -14,6 +14,7 @@ const SEED_EVALUACIONES: Evaluacion[] = [
   {
     id: 'eval-ucv-001',
     docente: 'Dr. Roberto Carlos Sánchez Flores',
+    codigoDocente: 'DOC-1011',
     observador: 'Dra. María Elena Ramos (Coordinadora SUBE)',
     asignatura: 'Metodología de la Investigación Científica',
     carrera: 'Derecho (SUBE a Distancia)',
@@ -56,6 +57,7 @@ const SEED_EVALUACIONES: Evaluacion[] = [
   {
     id: 'eval-ucv-002',
     docente: 'Mg. Carmen Rosa Huamán Vílchez',
+    codigoDocente: 'DOC-4061',
     observador: 'Mg. Jorge Luis Valdivia (Especialista Pedagógico)',
     asignatura: 'Contabilidad Gerencial y de Costos',
     carrera: 'Contabilidad (SUBE a Distancia)',
