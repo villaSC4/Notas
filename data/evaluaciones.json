@@ -1,0 +1,86 @@
+[
+  {
+    "id": "eval-ucv-001",
+    "docente": "Dr. Roberto Carlos Sánchez Flores",
+    "observador": "Dra. María Elena Ramos (Coordinadora SUBE)",
+    "asignatura": "Metodología de la Investigación Científica",
+    "carrera": "Derecho (SUBE a Distancia)",
+    "fecha": "2026-03-24",
+    "turno": "Noche (Síncrono)",
+    "semestre": "2026-I",
+    "enlaceSesion": "https://ucv-edu-pe.zoom.us/j/84920194821",
+    "temaClase": "Operacionalización de Variables y Matriz de Consistencia",
+    "puntajeTotal": 18.66,
+    "estado": "Aprobado",
+    "porcentaje": 93,
+    "respuestas": {
+      "1.a": "cumple",
+      "1.b": "cumple",
+      "1.c": "cumple",
+      "2.1.a": "cumple",
+      "2.1.b": "cumple",
+      "2.1.c": "cumple",
+      "2.2.a": "cumple",
+      "2.2.b": "cumple",
+      "2.2.c": "en_proceso",
+      "2.2.d": "cumple",
+      "2.3.a": "cumple",
+      "2.3.b": "cumple",
+      "2.3.c": "cumple"
+    },
+    "observaciones": {
+      "presentacion": "Cumplimiento impecable del protocolo institucional UCV SUBE. Fondo oficial y audio nítido.",
+      "inicio": "Excelente conexión inicial. Planteó un caso real de tesis para despertar el interés de los estudiantes.",
+      "desarrollo": "Diapositivas de alto nivel pedagógico. Se recomienda motivar a los estudiantes más tímidos a intervenir por audio.",
+      "cierre": "Cierre puntual con resumen gráfico y recordatorio de entregas en Blackboard."
+    },
+    "retroalimentacionGeneral": {
+      "fortalezas": "Dominio riguroso de la metodología de investigación, excelente dicción y estructura clara del contenido.",
+      "oportunidades": "Diversificar herramientas interactivas (Mentimeter o Padlet) para involucrar a la totalidad de la sala Zoom.",
+      "compromisosDocente": "Aplicar encuestas interactivas cada 30 minutos de sesión para dinamizar la participación grupal."
+    },
+    "createdAt": "2026-03-24T20:45:00.000Z"
+  },
+  {
+    "id": "eval-ucv-002",
+    "docente": "Mg. Carmen Rosa Huamán Vílchez",
+    "observador": "Mg. Jorge Luis Valdivia (Especialista Pedagógico)",
+    "asignatura": "Contabilidad Gerencial y de Costos",
+    "carrera": "Contabilidad (SUBE a Distancia)",
+    "fecha": "2026-03-20",
+    "turno": "Sábado Tarde",
+    "semestre": "2026-I",
+    "enlaceSesion": "https://ucv-edu-pe.zoom.us/j/91283746123",
+    "temaClase": "Costeo por Procesos y Punto de Equilibrio Multiproducto",
+    "puntajeTotal": 13,
+    "estado": "En Observación",
+    "porcentaje": 65,
+    "respuestas": {
+      "1.a": "en_proceso",
+      "1.b": "cumple",
+      "1.c": "cumple",
+      "2.1.a": "cumple",
+      "2.1.b": "en_proceso",
+      "2.1.c": "no_cumple",
+      "2.2.a": "cumple",
+      "2.2.b": "en_proceso",
+      "2.2.c": "no_cumple",
+      "2.2.d": "cumple",
+      "2.3.a": "en_proceso",
+      "2.3.b": "en_proceso",
+      "2.3.c": "cumple"
+    },
+    "observaciones": {
+      "presentacion": "No activó el fondo oficial institucional UCV SUBE a Distancia durante el primer bloque.",
+      "inicio": "Omitió la formulación de preguntas motivadoras o rescate de saberes previos; ingresó directamente a la teoría.",
+      "desarrollo": "Buena resolución numérica en Excel pero la sesión fue excesivamente expositiva, con mínima interacción de alumnos.",
+      "cierre": "El tiempo quedó corto y la síntesis se realizó de forma acelerada."
+    },
+    "retroalimentacionGeneral": {
+      "fortalezas": "Solvencia técnica y dominio absoluto en el cálculo del costo unitario y punto de equilibrio.",
+      "oportunidades": "Planificar la didáctica del inicio con preguntas detonantes y utilizar salas para grupos reducidos en Zoom.",
+      "compromisosDocente": "Configurar el fondo virtual institucional y diseñar al menos dos actividades colaborativas por sesión."
+    },
+    "createdAt": "2026-03-20T17:30:00.000Z"
+  }
+]
