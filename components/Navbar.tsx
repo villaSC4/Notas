@@ -9,6 +9,7 @@ interface NavbarProps {
   onOpenHistory: () => void;
   onReset: () => void;
   onPrint: () => void;
+  escuelaNombre?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenHistory,
   onReset,
   onPrint,
+  escuelaNombre,
 }) => {
   return (
     <header className="institutional-header sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
@@ -50,6 +52,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-[#143e72] border border-blue-200/70">
                   SUBE a Distancia
                 </span>
+                {escuelaNombre && (
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold border shadow-2xs ${
+                    escuelaNombre.includes('Industrial')
+                      ? 'bg-amber-50 text-amber-900 border-amber-300'
+                      : 'bg-emerald-50 text-emerald-900 border-emerald-300'
+                  }`}>
+                    DAC {escuelaNombre}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 font-normal hidden sm:block">
                 Vicerrectorado Académico • Dirección de Acompañamiento y Evaluación Docente

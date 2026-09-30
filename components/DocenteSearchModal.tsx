@@ -16,6 +16,7 @@ interface DocenteSearchModalProps {
   onClose: () => void;
   onSelectDocente: (docente: Docente) => void;
   selectedCodigo?: string;
+  carreraFiltro?: string;
 }
 
 export const DocenteSearchModal: React.FC<DocenteSearchModalProps> = ({
@@ -23,9 +24,16 @@ export const DocenteSearchModal: React.FC<DocenteSearchModalProps> = ({
   onClose,
   onSelectDocente,
   selectedCodigo,
+  carreraFiltro,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCarrera, setSelectedCarrera] = useState<string>('todas');
+  const [selectedCarrera, setSelectedCarrera] = useState<string>(carreraFiltro || 'todas');
+
+  useEffect(() => {
+    if (carreraFiltro) {
+      setSelectedCarrera(carreraFiltro);
+    }
+  }, [carreraFiltro, isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -41,8 +49,8 @@ export const DocenteSearchModal: React.FC<DocenteSearchModalProps> = ({
 
   const carreras = [
     { id: 'todas', label: 'Todos los Docentes (18)' },
-    { id: 'Sistemas', label: 'Ing. de Sistemas (FIA)' },
-    { id: 'Industrial', label: 'Ing. Industrial (FIA)' },
+    { id: 'Sistemas', label: 'Ing. de Sistemas (6)' },
+    { id: 'Industrial', label: 'Ing. Industrial (12)' },
   ];
 
   const filtered = DOCENTES_MOCK.filter((doc) => {

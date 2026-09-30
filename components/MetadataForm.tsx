@@ -24,12 +24,14 @@ interface MetadataFormProps {
   metadata: EvaluacionMetadata;
   onChange: (field: keyof EvaluacionMetadata, value: string) => void;
   errors?: Record<string, string>;
+  carreraFiltro?: string;
 }
 
 export const MetadataForm: React.FC<MetadataFormProps> = ({
   metadata,
   onChange,
   errors = {},
+  carreraFiltro,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -40,21 +42,21 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
   // Auto-detect selected teacher if metadata has codigoDocente or docente name
   useEffect(() => {
     if (metadata.codigoDocente) {
-      const match = buscarDocentes(metadata.codigoDocente)[0];
+      const match = buscarDocentes(metadata.codigoDocente, carreraFiltro)[0];
       if (match) setSelectedDocente(match);
     } else if (metadata.docente) {
-      const match = buscarDocentes(metadata.docente)[0];
+      const match = buscarDocentes(metadata.docente, carreraFiltro)[0];
       if (match && (match.nombreCompleto.toLowerCase() === metadata.docente.toLowerCase() || `${match.apellidos} ${match.nombres}`.toLowerCase() === metadata.docente.toLowerCase())) {
         setSelectedDocente(match);
       }
     }
-  }, [metadata.codigoDocente, metadata.docente]);
+  }, [metadata.codigoDocente, metadata.docente, carreraFiltro]);
 
   // Suggestions filtered in real time as user types
   const suggestions = React.useMemo(() => {
     if (!metadata.docente || metadata.docente.length < 2) return [];
-    return buscarDocentes(metadata.docente).slice(0, 6);
-  }, [metadata.docente]);
+    return buscarDocentes(metadata.docente, carreraFiltro).slice(0, 6);
+  }, [metadata.docente, carreraFiltro]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -98,6 +100,7 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
         onClose={() => setIsModalOpen(false)}
         onSelectDocente={handleSelectDocente}
         selectedCodigo={metadata.codigoDocente}
+        carreraFiltro={carreraFiltro}
       />
 
       {/* Form Header */}
@@ -132,11 +135,18 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
           {/* Docente Observado con Consulta a BD por Apellidos o Código */}
           <div className="relative" ref={searchContainerRef}>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-700">
-                Docente Observado <span className="text-[#c82333]">*</span>
-              </label>
+              <div className="flex items-center gap-1.5">
+                <label className="block text-xs font-semibold text-slate-700">
+                  Docente Observado <span className="text-[#c82333]">*</span>
+                </label>
+                {carreraFiltro && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-50 text-[#143e72] border border-blue-200">
+                    {carreraFiltro}
+                  </span>
+                )}
+              </div>
               <span className="text-[11px] text-slate-400">
-                Buscar por apellido o código
+                {carreraFiltro ? `Filtro ${carreraFiltro}` : 'Buscar por apellido o código'}
               </span>
             </div>
 
@@ -156,7 +166,13 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
                     onChange('codigoDocente', '');
                   }
                 }}
-                placeholder="Escriba apellidos (ej. Amache) o código (DOC-)..."
+                placeholder={
+                  carreraFiltro === 'Industrial'
+                    ? 'Buscar docente Industrial (ej. Quispe, DOC-2041)...'
+                    : carreraFiltro === 'Sistemas'
+                    ? 'Buscar docente Sistemas (ej. Amache, DOC-1001)...'
+                    : 'Escriba apellidos (ej. Amache) o código (DOC-)...'
+                }
                 className={`w-full pl-9 pr-8 py-2 text-sm rounded-lg border bg-white focus:outline-hidden transition-all ${
                   errors.docente
                     ? 'border-rose-400 focus:ring-2 focus:ring-rose-100 text-rose-900 bg-rose-50/20'
@@ -195,7 +211,7 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
             {showDropdown && suggestions.length > 0 && (
               <div className="absolute z-40 left-0 right-0 mt-1 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in-50 duration-100 max-h-72 overflow-y-auto">
                 <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400 flex items-center justify-between">
-                  <span>Docentes encontrados en BD ({suggestions.length})</span>
+                  <span>Docentes {carreraFiltro ? `de ${carreraFiltro}` : ''} encontrados en BD ({suggestions.length})</span>
                   <span>Clic para autocompletar</span>
                 </div>
                 {suggestions.map((doc) => (

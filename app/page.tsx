@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   EvaluacionMetadata,
   CriterioNivel,
@@ -32,7 +33,7 @@ const INITIAL_METADATA: EvaluacionMetadata = {
   docente: '',
   observador: '',
   asignatura: '',
-  carrera: 'Derecho (SUBE a Distancia)',
+  carrera: 'Ingeniería de Sistemas (SUBE a Distancia)',
   fecha: new Date().toISOString().split('T')[0],
   turno: 'Virtual Síncrono',
   semestre: '2026-I',
@@ -46,10 +47,39 @@ const INITIAL_RETROALIMENTACION: RetroalimentacionGeneral = {
   compromisosDocente: '',
 };
 
-export default function RubricaPage() {
+function RubricaContent() {
+  const searchParams = useSearchParams();
+  const escuelaParam = (searchParams.get('escuela') || searchParams.get('dac') || '').toLowerCase();
+
+  // Detect career filter and official school name from URL
+  const { carreraFiltro, defaultCarrera, escuelaNombre } = useMemo(() => {
+    if (escuelaParam.includes('indus')) {
+      return {
+        carreraFiltro: 'Industrial',
+        defaultCarrera: 'Ingeniería Industrial (SUBE a Distancia)',
+        escuelaNombre: 'Ingeniería Industrial',
+      };
+    }
+    if (escuelaParam.includes('sist')) {
+      return {
+        carreraFiltro: 'Sistemas',
+        defaultCarrera: 'Ingeniería de Sistemas (SUBE a Distancia)',
+        escuelaNombre: 'Ingeniería de Sistemas',
+      };
+    }
+    return {
+      carreraFiltro: undefined,
+      defaultCarrera: 'Ingeniería de Sistemas (SUBE a Distancia)',
+      escuelaNombre: undefined,
+    };
+  }, [escuelaParam]);
+
   // Evaluation State
   const [currentId, setCurrentId] = useState<string | null>(null);
-  const [metadata, setMetadata] = useState<EvaluacionMetadata>(INITIAL_METADATA);
+  const [metadata, setMetadata] = useState<EvaluacionMetadata>(() => ({
+    ...INITIAL_METADATA,
+    carrera: defaultCarrera,
+  }));
   const [respuestas, setRespuestas] = useState<Record<string, CriterioNivel | null>>({});
   const [observaciones, setObservaciones] = useState<Record<string, string>>({
     presentacion: '',
@@ -59,6 +89,18 @@ export default function RubricaPage() {
   });
   const [retroalimentacion, setRetroalimentacion] =
     useState<RetroalimentacionGeneral>(INITIAL_RETROALIMENTACION);
+
+  // Sync carrera default if not locked to a specific teacher
+  useEffect(() => {
+    if (defaultCarrera) {
+      setMetadata((prev) => {
+        if (!prev.codigoDocente) {
+          return { ...prev, carrera: defaultCarrera };
+        }
+        return prev;
+      });
+    }
+  }, [defaultCarrera]);
 
   // App UI State
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -167,7 +209,10 @@ export default function RubricaPage() {
       }
     }
     setCurrentId(null);
-    setMetadata(INITIAL_METADATA);
+    setMetadata({
+      ...INITIAL_METADATA,
+      carrera: defaultCarrera,
+    });
     setRespuestas({});
     setObservaciones({
       presentacion: '',
@@ -320,6 +365,7 @@ export default function RubricaPage() {
         onOpenHistory={() => setIsHistoryOpen(true)}
         onReset={handleReset}
         onPrint={handlePrint}
+        escuelaNombre={escuelaNombre}
       />
 
       {/* Official Print View (only rendered when user prints) */}
@@ -349,6 +395,15 @@ export default function RubricaPage() {
                   <span className="text-[11px] font-semibold text-[#143e72] bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
                     UCV Virtual • SUBE a Distancia
                   </span>
+                  {escuelaNombre && (
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded border shadow-2xs ${
+                      escuelaNombre.includes('Industrial')
+                        ? 'bg-amber-50 text-amber-900 border-amber-300'
+                        : 'bg-emerald-50 text-emerald-900 border-emerald-300'
+                    }`}>
+                      DAC Escuela de {escuelaNombre}
+                    </span>
+                  )}
                   <span className="text-[11px] font-medium text-slate-500">
                     Acompañamiento Pedagógico de Clases Síncronas en Zoom
                   </span>
@@ -383,6 +438,7 @@ export default function RubricaPage() {
             metadata={metadata}
             onChange={handleMetadataChange}
             errors={formErrors}
+            carreraFiltro={carreraFiltro}
           />
         </section>
 
@@ -491,5 +547,23 @@ export default function RubricaPage() {
         isLoading={isLoadingHistory}
       />
     </div>
+  );
+}
+
+export default function RubricaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-[#143e72] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-sm font-bold text-slate-700">Cargando Sistema de Rúbricas UCV...</p>
+            <p className="text-xs text-slate-400 mt-1">Sincronizando información académica y docente</p>
+          </div>
+        </div>
+      }
+    >
+      <RubricaContent />
+    </Suspense>
   );
 }
