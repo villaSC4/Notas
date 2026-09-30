@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { EvaluacionMetadata } from '@/types/rubrica';
 import { Docente } from '@/types/docente';
-import { buscarDocentes } from '@/lib/docentes-data';
+import { buscarDocentes, DOCENTES_REALES } from '@/lib/docentes-data';
 import { DocenteSearchModal } from './DocenteSearchModal';
 import {
   ShieldCheck,
@@ -35,9 +35,11 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showObservadorDropdown, setShowObservadorDropdown] = useState(false);
   const [selectedDocente, setSelectedDocente] = useState<Docente | null>(null);
   const [isManualCourse, setIsManualCourse] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const observadorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-detect selected teacher if metadata has codigoDocente or docente name
   useEffect(() => {
@@ -52,13 +54,35 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
     }
   }, [metadata.codigoDocente, metadata.docente, carreraFiltro]);
 
-  // Suggestions filtered in real time as user types
+  // Suggestions filtered in real time as user types for observed teacher
   const suggestions = React.useMemo(() => {
     if (!metadata.docente || metadata.docente.length < 2) return [];
     return buscarDocentes(metadata.docente, carreraFiltro).slice(0, 6);
   }, [metadata.docente, carreraFiltro]);
 
-  // Close dropdown on outside click
+  // Suggestions with teaching load for observador/evaluador (supports teachers + free typing)
+  const observadorSuggestions = React.useMemo(() => {
+    if (!metadata.observador || metadata.observador.trim().length < 2) {
+      return buscarDocentes('', carreraFiltro).slice(0, 8);
+    }
+    return buscarDocentes(metadata.observador).slice(0, 8);
+  }, [metadata.observador, carreraFiltro]);
+
+  // Detected teacher for observador to show load
+  const selectedObservadorDocente = React.useMemo(() => {
+    if (!metadata.observador || metadata.observador.trim().length === 0) return null;
+    const norm = metadata.observador.trim().toLowerCase();
+    return (
+      DOCENTES_REALES.find(
+        (d) =>
+          d.nombreCompleto.toLowerCase() === norm ||
+          `${d.apellidos} ${d.nombres}`.toLowerCase() === norm ||
+          d.codigo.toLowerCase() === norm
+      ) || null
+    );
+  }, [metadata.observador]);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -66,6 +90,12 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
         !searchContainerRef.current.contains(e.target as Node)
       ) {
         setShowDropdown(false);
+      }
+      if (
+        observadorContainerRef.current &&
+        !observadorContainerRef.current.contains(e.target as Node)
+      ) {
+        setShowObservadorDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -249,11 +279,17 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
             )}
           </div>
 
-          {/* Evaluador / Jefatura */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Docente Observador / Evaluador <span className="text-[#c82333]">*</span>
-            </label>
+          {/* Docente Observador / Evaluador con soporte de Docentes, Carga e Ingreso Libre */}
+          <div className="relative" ref={observadorContainerRef}>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700">
+                Docente Observador / Evaluador <span className="text-[#c82333]">*</span>
+              </label>
+              <span className="text-[11px] text-slate-400">
+                Docente con carga o ingreso libre
+              </span>
+            </div>
+
             <div className="relative rounded-lg">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <ShieldCheck className="w-4 h-4" />
@@ -261,17 +297,118 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
               <input
                 type="text"
                 value={metadata.observador}
-                onChange={(e) => onChange('observador', e.target.value)}
-                placeholder="Nombre del evaluador o coordinador"
-                className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border bg-white focus:outline-hidden transition-all ${
+                onFocus={() => setShowObservadorDropdown(true)}
+                onChange={(e) => {
+                  onChange('observador', e.target.value);
+                  setShowObservadorDropdown(true);
+                }}
+                placeholder="Seleccione docente o escriba nombre libre..."
+                className={`w-full pl-9 pr-8 py-2 text-sm rounded-lg border bg-white focus:outline-hidden transition-all ${
                   errors.observador
                     ? 'border-rose-400 focus:ring-2 focus:ring-rose-100 text-rose-900 bg-rose-50/20'
                     : 'border-slate-300 focus:border-[#1a569d] focus:ring-2 focus:ring-blue-100/60 text-slate-800'
                 }`}
               />
+              {metadata.observador && (
+                <button
+                  type="button"
+                  onClick={() => onChange('observador', '')}
+                  className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
+
+            {/* Docente detectado: Muestra código institucional y Carga Lectiva oficial */}
+            {selectedObservadorDocente && (
+              <div className="mt-1.5 p-2 rounded-lg bg-emerald-50/80 border border-emerald-200/90 text-[11px] text-emerald-950 animate-in fade-in-50">
+                <div className="flex items-center justify-between gap-1.5 font-semibold">
+                  <span className="flex items-center gap-1 truncate">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                    <span>Docente: <strong>{selectedObservadorDocente.nombreCompleto}</strong> ({selectedObservadorDocente.codigo})</span>
+                  </span>
+                  <span className="text-[10px] text-emerald-700 bg-emerald-100/90 px-1.5 py-0.2 rounded font-medium flex-shrink-0">
+                    {selectedObservadorDocente.carrera.replace(' (SUBE a Distancia)', '')}
+                  </span>
+                </div>
+                {selectedObservadorDocente.asignaturas.length > 0 && (
+                  <div className="mt-1 text-[10px] text-emerald-800 flex items-start gap-1">
+                    <BookMarked className="w-3 h-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span className="line-clamp-1">
+                      <strong>Carga lectiva:</strong> {selectedObservadorDocente.asignaturas.join(' • ')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {errors.observador && (
               <p className="mt-1 text-xs text-[#c82333] font-medium">{errors.observador}</p>
+            )}
+
+            {/* Popover con lista de Docentes, Carga e Ingreso Libre */}
+            {showObservadorDropdown && (
+              <div className="absolute z-40 left-0 right-0 mt-1 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in-50 duration-100 max-h-72 overflow-y-auto">
+                <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400 flex items-center justify-between">
+                  <span>Docentes y Carga Lectiva ({observadorSuggestions.length})</span>
+                  <span>Seleccionar o escribir libre</span>
+                </div>
+
+                {observadorSuggestions.map((doc) => (
+                  <div
+                    key={doc.id}
+                    onMouseDown={() => {
+                      onChange('observador', doc.nombreCompleto);
+                      setShowObservadorDropdown(false);
+                    }}
+                    className="p-3 hover:bg-blue-50/60 transition-colors cursor-pointer border-b border-slate-100 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-slate-900">
+                        {doc.nombreCompleto}
+                      </span>
+                      <span className="text-[10px] font-bold bg-[#143e72] text-white px-1.5 py-0.5 rounded">
+                        {doc.codigo}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+                      <span className="font-medium text-[#1a569d]">
+                        {doc.carrera.replace(' (SUBE a Distancia)', '')}
+                      </span>
+                      <span>•</span>
+                      <span className="truncate">{doc.email}</span>
+                    </div>
+
+                    {/* Carga lectiva asignada */}
+                    {doc.asignaturas.length > 0 && (
+                      <div className="mt-1.5 p-1.5 rounded bg-slate-50 border border-slate-200/70 text-[10px] text-slate-600 flex items-start gap-1">
+                        <BookMarked className="w-3 h-3 text-[#1a569d] flex-shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="text-slate-700">Carga:</strong> {doc.asignaturas.join(' • ')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {metadata.observador.trim().length > 0 && (
+                  <div
+                    onMouseDown={() => {
+                      setShowObservadorDropdown(false);
+                    }}
+                    className="p-2.5 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 cursor-pointer flex items-center justify-between border-t border-slate-200"
+                  >
+                    <span className="flex items-center gap-1.5 truncate">
+                      <span>✏️</span> Usar nombre libre: <strong className="text-[#143e72]">&ldquo;{metadata.observador}&rdquo;</strong>
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-semibold bg-white px-2 py-0.5 rounded border border-slate-200">
+                      Ingreso Libre
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
