@@ -34,7 +34,21 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedDocente, setSelectedDocente] = useState<Docente | null>(null);
+  const [isManualCourse, setIsManualCourse] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-detect selected teacher if metadata has codigoDocente or docente name
+  useEffect(() => {
+    if (metadata.codigoDocente) {
+      const match = buscarDocentes(metadata.codigoDocente)[0];
+      if (match) setSelectedDocente(match);
+    } else if (metadata.docente) {
+      const match = buscarDocentes(metadata.docente)[0];
+      if (match && (match.nombreCompleto.toLowerCase() === metadata.docente.toLowerCase() || `${match.apellidos} ${match.nombres}`.toLowerCase() === metadata.docente.toLowerCase())) {
+        setSelectedDocente(match);
+      }
+    }
+  }, [metadata.codigoDocente, metadata.docente]);
 
   // Suggestions filtered in real time as user types
   const suggestions = React.useMemo(() => {
@@ -62,7 +76,8 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
     onChange('docente', doc.nombreCompleto);
     onChange('codigoDocente', doc.codigo);
     onChange('carrera', doc.carrera);
-    if (doc.asignaturas.length > 0 && !metadata.asignatura) {
+    setIsManualCourse(false);
+    if (doc.asignaturas && doc.asignaturas.length > 0) {
       onChange('asignatura', doc.asignaturas[0]);
     }
     setShowDropdown(false);
@@ -72,6 +87,7 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
     setSelectedDocente(null);
     onChange('docente', '');
     onChange('codigoDocente', '');
+    setIsManualCourse(false);
   };
 
   return (
@@ -245,46 +261,106 @@ export const MetadataForm: React.FC<MetadataFormProps> = ({
 
           {/* Experiencia Curricular / Asignatura */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Experiencia Curricular / Asignatura <span className="text-[#c82333]">*</span>
-            </label>
-            <div className="relative rounded-lg">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <BookOpen className="w-4 h-4" />
-              </div>
-              <input
-                type="text"
-                value={metadata.asignatura}
-                onChange={(e) => onChange('asignatura', e.target.value)}
-                placeholder="Nombre oficial de la materia"
-                className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border bg-white focus:outline-hidden transition-all ${
-                  errors.asignatura
-                    ? 'border-rose-400 focus:ring-2 focus:ring-rose-100 text-rose-900 bg-rose-50/20'
-                    : 'border-slate-300 focus:border-[#1a569d] focus:ring-2 focus:ring-blue-100/60 text-slate-800'
-                }`}
-              />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700">
+                Experiencia Curricular / Asignatura <span className="text-[#c82333]">*</span>
+              </label>
+              {selectedDocente && selectedDocente.asignaturas.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setIsManualCourse(!isManualCourse)}
+                  className="text-[11px] text-[#1a569d] hover:underline font-medium"
+                >
+                  {isManualCourse ? '← Ver cursos asignados' : '✏️ Ingreso manual'}
+                </button>
+              )}
             </div>
 
-            {/* Quick suggested courses if a teacher with assigned subjects is selected */}
-            {selectedDocente && selectedDocente.asignaturas.length > 0 && (
-              <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-                <span className="text-[10px] text-slate-400 font-semibold mr-0.5">
-                  Cursos del docente:
-                </span>
-                {selectedDocente.asignaturas.map((asig, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => onChange('asignatura', asig)}
-                    className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
-                      metadata.asignatura === asig
-                        ? 'bg-[#143e72] text-white border-[#143e72]'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-blue-50 hover:text-[#143e72]'
+            {selectedDocente && selectedDocente.asignaturas.length > 0 && !isManualCourse ? (
+              <div>
+                <div className="relative rounded-lg">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <BookOpen className="w-4 h-4 text-[#1a569d]" />
+                  </div>
+                  <select
+                    value={metadata.asignatura}
+                    onChange={(e) => onChange('asignatura', e.target.value)}
+                    className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border bg-white focus:outline-hidden transition-all font-semibold ${
+                      errors.asignatura
+                        ? 'border-rose-400 focus:ring-2 focus:ring-rose-100 text-rose-900 bg-rose-50/20'
+                        : 'border-[#1a569d]/60 focus:border-[#1a569d] focus:ring-2 focus:ring-blue-100/60 text-slate-900 bg-blue-50/15'
                     }`}
                   >
-                    {asig}
-                  </button>
-                ))}
+                    <option value="">-- Seleccionar curso a supervisar ({selectedDocente.asignaturas.length} disponibles) --</option>
+                    {selectedDocente.asignaturas.map((asig, i) => (
+                      <option key={i} value={asig}>
+                        {asig}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Clickable course chips for quick 1-click selection */}
+                <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                    Cursos asignados:
+                  </span>
+                  {selectedDocente.asignaturas.map((asig, i) => {
+                    const isCurrent = metadata.asignatura === asig;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => onChange('asignatura', asig)}
+                        className={`text-xs px-2.5 py-1 rounded-md border font-semibold transition-all flex items-center gap-1 ${
+                          isCurrent
+                            ? 'bg-[#143e72] text-white border-[#143e72] shadow-xs'
+                            : 'bg-white text-slate-700 border-slate-300 hover:bg-blue-50 hover:border-blue-400 hover:text-[#143e72]'
+                        }`}
+                      >
+                        {isCurrent && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+                        <span>{asig}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="relative rounded-lg">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    value={metadata.asignatura}
+                    onChange={(e) => onChange('asignatura', e.target.value)}
+                    placeholder="Escriba el nombre oficial de la materia..."
+                    className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border bg-white focus:outline-hidden transition-all ${
+                      errors.asignatura
+                        ? 'border-rose-400 focus:ring-2 focus:ring-rose-100 text-rose-900 bg-rose-50/20'
+                        : 'border-slate-300 focus:border-[#1a569d] focus:ring-2 focus:ring-blue-100/60 text-slate-800'
+                    }`}
+                  />
+                </div>
+                {selectedDocente && selectedDocente.asignaturas.length > 0 && (
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Cursos detectados del docente:{' '}
+                    {selectedDocente.asignaturas.map((a, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          onChange('asignatura', a);
+                          setIsManualCourse(false);
+                        }}
+                        className="text-[#1a569d] hover:underline font-semibold mr-1.5"
+                      >
+                        {a}
+                      </button>
+                    ))}
+                  </p>
+                )}
               </div>
             )}
 

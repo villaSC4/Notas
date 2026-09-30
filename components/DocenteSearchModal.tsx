@@ -40,13 +40,9 @@ export const DocenteSearchModal: React.FC<DocenteSearchModalProps> = ({
   if (!isOpen) return null;
 
   const carreras = [
-    { id: 'todas', label: 'Todas las Carreras' },
-    { id: 'Sistemas', label: 'Ing. de Sistemas' },
-    { id: 'Industrial', label: 'Ing. Industrial' },
-    { id: 'Derecho', label: 'Derecho' },
-    { id: 'Administración', label: 'Administración' },
-    { id: 'Contabilidad', label: 'Contabilidad' },
-    { id: 'Psicología', label: 'Psicología' },
+    { id: 'todas', label: 'Todos los Docentes (18)' },
+    { id: 'Sistemas', label: 'Ing. de Sistemas (FIA)' },
+    { id: 'Industrial', label: 'Ing. Industrial (FIA)' },
   ];
 
   const filtered = DOCENTES_MOCK.filter((doc) => {
